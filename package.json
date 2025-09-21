@@ -9,6 +9,10 @@
     "lint": "next lint --fix",
     "lint:check": "next lint",
     "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:watch": "vitest --watch",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "export": "next build && next export",
@@ -22,19 +26,26 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.0.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.0.0",
     "husky": "^9.1.7",
+    "jsdom": "^27.0.0",
     "lint-staged": "^16.1.6",
     "postcss": "^8.0.0",
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
   }
 }
