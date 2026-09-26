@@ -1,5 +1,6 @@
 import { RateLimiter } from './rate-limiter';
 import { ApiLogger } from '@/lib/utils/logger';
+import { SessionManager } from '@/lib/utils/session';
 
 interface RetryOptions {
   maxRetries: number;
@@ -89,8 +90,8 @@ const DEFAULT_RETRY_OPTIONS: RetryOptions = {
 };
 
 const DEFAULT_RATE_LIMITER = new RateLimiter({
-  requestsPerSecond: 5,
-  burstLimit: 10
+  requestsPerSecond: 2, // More conservative rate limiting
+  burstLimit: 5
 });
 
 export class PoEApiClient {
@@ -137,11 +138,22 @@ export class PoEApiClient {
       const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
 
       try {
+        // Get POESESSID for authentication
+        const sessionManager = SessionManager.getInstance();
+        const sessionId = sessionManager.getSession();
+
+        const headers: Record<string, string> = {
+          'User-Agent': 'POE-Profit-Assistant/1.0'
+        };
+
+        // Add POESESSID cookie for character-window endpoints
+        if (url.includes('character-window') && sessionId) {
+          headers['Cookie'] = `POESESSID=${sessionId}`;
+        }
+
         const response = await fetch(url, {
           signal: controller.signal,
-          headers: {
-            'User-Agent': 'POE-Profit-Assistant/1.0'
-          }
+          headers
         });
 
         clearTimeout(timeoutId);
@@ -189,8 +201,8 @@ export class PoEApiClient {
           break;
         }
 
-        // Don't retry on client errors (4xx)
-        if (lastError.message.includes('HTTP 4')) {
+        // Don't retry on client errors (4xx) except 429 (Too Many Requests)
+        if (lastError.message.includes('HTTP 4') && !lastError.message.includes('HTTP 429')) {
           break;
         }
 

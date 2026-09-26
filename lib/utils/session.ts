@@ -25,6 +25,7 @@ export class SessionManager {
     if (!process.env.SESSION_ENCRYPTION_KEY) {
       // This is just a warning, not an error - we can auto-generate a key
       if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
         console.warn('SESSION_ENCRYPTION_KEY not found in environment - using auto-generated key')
       }
     }

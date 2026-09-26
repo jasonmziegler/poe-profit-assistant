@@ -60,9 +60,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     let errorCount = 0;
 
     // Process ladder data - try to fetch detailed character data but fallback to ladder data only
+    const detailErrors: Array<{character: string, account: string, error: string}> = [];
+
     for (const entry of ladderResponse.entries) {
       let characterItems: any[] = [];
       let hasDetailedData = false;
+      let errorDetails = '';
 
       // Try to fetch character details (this may fail due to private profiles)
       try {
@@ -74,11 +77,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         hasDetailedData = true;
       } catch (error) {
         // Character details failed (likely private profile), use ladder data only
+        errorDetails = error instanceof Error ? error.message : 'Unknown error';
+        detailErrors.push({
+          character: entry.character.name,
+          account: entry.account.name,
+          error: errorDetails
+        });
+
         ApiLogger.logError('character_detail_fetch', error as Error, {
           characterName: entry.character.name,
           accountName: entry.account.name,
           league,
-          fallbackToLadderData: true
+          fallbackToLadderData: true,
+          errorMessage: errorDetails
         });
         // Don't increment errorCount - this is expected for private profiles
       }
@@ -138,6 +149,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           failed: errorCount,
           fromCache: false
         }
+      },
+      debug: {
+        detailErrors: detailErrors.slice(0, 5), // First 5 errors for debugging
+        totalDetailErrors: detailErrors.length
       }
     });
 
